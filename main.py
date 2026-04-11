@@ -1,3 +1,5 @@
+import time
+
 class MiniNpuSimulator:
     def __init__(self):
         self.epsilon = 1e-9
@@ -15,6 +17,44 @@ class MiniNpuSimulator:
         print("# [2] 패턴 입력")
         print("#---------------------------------------")
         pattern = self.get_validated_input("패턴 (3줄 입력, 공백 구분)", 3)
+
+        iterations = 10
+
+        start_time = time.perf_counter()
+        for _ in range(iterations):
+            score_a = self.calculate_mac(filter_a, pattern)
+            score_b = self.calculate_mac(filter_b, pattern)
+        avg_time = ((time.perf_counter() - start_time) / 10) * 1000
+
+        diff = abs(score_a - score_b)
+        is_undecided = diff < self.epsilon
+        if not is_undecided:
+            result = 'A' if score_a > score_b else 'B'
+
+        if is_undecided:
+            print("\n\n#---------------------------------------")
+            print("# [3] MAC 결과 (판정 불가)")
+            print("#---------------------------------------")
+
+            print(f"A('Cross') 점수: {score_a}")
+            print(f"B('X') 점수: {score_b}")
+            print("판정: 판정 불가 (|A-B| < 1e-9)")
+        else:
+            print("\n\n#---------------------------------------")
+            print("# [3] MAC 결과")
+            print("#---------------------------------------")
+
+            print(f"A('Cross') 점수: {score_a}")        
+            print(f"B('X') 점수: {score_b}")
+            print(f"연산 시간(평균/10회): {avg_time:.4f} ms")
+            print(f"판정: {result}")
+
+    def calculate_mac(self, filter, pattern):
+        sum = 0.0
+        for i in range(len(pattern)):
+            for j in range(len(pattern[i])):
+                sum += filter[i][j] * pattern[i][j]
+        return sum
     
     def get_validated_input(self, prompt, filter_size):
         print(prompt)
