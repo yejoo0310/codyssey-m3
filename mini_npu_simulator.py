@@ -228,15 +228,14 @@ class MiniNpuSimulator:
         score_x = x_filter.mac(pattern)
         decision = self.decide_label(score_cross, score_x)
 
-        if decision == "UNDECIDED":
-            status = "FAIL"
-            reason = "동점 규칙"
-        elif decision == expected:
+        if decision == expected:
             status = "PASS"
             reason = None
         else:
             status = "FAIL"
             reason = "판정 결과가 expected와 다릅니다."
+            if decision == "UNDECIDED":
+                reason = "판정 결과가 expected와 다릅니다.(동점 규칙)"
 
         return {
             "pattern_key": pattern_key,
