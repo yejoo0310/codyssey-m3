@@ -1,9 +1,11 @@
 from matrix import Matrix
+from json_data_loader import JsonDataLoader
 import time
 
 class MiniNpuSimulator:
     def __init__(self):
         self.epsilon = 1e-9
+        self.file_path = "data.json"
         self.result_record = []
     
     def run(self):
@@ -15,6 +17,8 @@ class MiniNpuSimulator:
 
         if user_input == 1:
             self.run_mode1()
+        elif user_input == 2:
+            self.run_mode2()
             
     def run_mode1(self):
         print("\n\n#----------------------------------------")
@@ -35,7 +39,7 @@ class MiniNpuSimulator:
         for _ in range(iterations):
             score_a = filter_a.mac(pattern)
             score_b = filter_b.mac(pattern)
-        avg_time = ((time.perf_counter() - start_time) / 10) * 1000
+        avg_time = ((time.perf_counter() - start_time) / iterations) * 1000
 
         diff = abs(score_a - score_b)
         is_undecided = diff < self.epsilon
@@ -58,6 +62,44 @@ class MiniNpuSimulator:
         print(f"B('X') 점수: {score_b}")
         print(f"연산 시간(평균/10회): {avg_time:.4f} ms")
         print(f"판정: {result}")
+    
+    def run_mode2(self):
+        loader = JsonDataLoader(self.file_path)
+        
+        print("\n\n#---------------------------------------")
+        print("# [1] 필터 로드")
+        print("#---------------------------------------")
+        
+        try:
+            filters_by_size = loader.load_filters()
+        except FileNotFoundError as exception:
+            print(f"오류: {exception}")
+            return
+        except ValueError as exception:
+            print(f"오류: {exception}")
+            return
+        
+        for matrix_size in sorted(filters_by_size.keys()):
+            print(f"size_{matrix_size} 필터 로드 완료 (Cross, X)")
+            
+        print("\n\n#---------------------------------------")
+        print("# [2] 패턴 로드")
+        print("#---------------------------------------")
+        
+        try:
+            pattern_cases = loader.load_patterns()
+        except FileNotFoundError as exception:
+            print(f"오류: {exception}")
+            return
+        except ValueError as exception:
+            print(f"오류: {exception}")
+            return
+
+        for pattern_case in pattern_cases:
+            print(
+                f"{pattern_case['pattern_key']} "
+                f"(size={pattern_case['size']}, expected={pattern_case['expected']}) 로드 완료"
+            )
     
     def get_validated_input(self, prompt, matrix_size):
         print(prompt)
