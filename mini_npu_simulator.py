@@ -67,39 +67,25 @@ class MiniNpuSimulator:
         loader = JsonDataLoader(self.file_path)
         
         print("\n\n#---------------------------------------")
-        print("# [1] 필터 로드")
+        print("# [1] 필터 & 패턴 로드")
         print("#---------------------------------------")
         
         try:
             filters_by_size = loader.load_filters()
-        except FileNotFoundError as exception:
-            print(f"오류: {exception}")
-            return
-        except ValueError as exception:
+            pattern_cases = loader.load_patterns()
+        except (FileNotFoundError, ValueError) as exception:
             print(f"오류: {exception}")
             return
         
         for matrix_size in sorted(filters_by_size.keys()):
             print(f"size_{matrix_size} 필터 로드 완료 (Cross, X)")
             
-        print("\n\n#---------------------------------------")
-        print("# [2] 패턴 로드")
-        print("#---------------------------------------")
-        
-        try:
-            pattern_cases = loader.load_patterns()
-        except FileNotFoundError as exception:
-            print(f"오류: {exception}")
-            return
-        except ValueError as exception:
-            print(f"오류: {exception}")
-            return
-
         for pattern_case in pattern_cases:
             print(
                 f"{pattern_case['pattern_key']} "
                 f"(size={pattern_case['size']}, expected={pattern_case['expected']}) 로드 완료"
             )
+        
     
     def get_validated_input(self, prompt, matrix_size):
         print(prompt)

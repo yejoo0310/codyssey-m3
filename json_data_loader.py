@@ -28,6 +28,12 @@ class JsonDataLoader:
             
             if not isinstance(filters, dict):
                 raise ValueError(f"{size_key}의 값은 객체여야 합니다.")
+            
+            normalized_filters = {}
+
+            for raw_label, values in filters.items():
+                normalized_label = self.normalize_label(raw_label)
+                normalized_filters[normalized_label] = Matrix(values)
 
             if "cross" not in filters:
                 raise ValueError(f"{size_key}에 cross 필터가 없습니다.")
@@ -35,13 +41,7 @@ class JsonDataLoader:
             if "x" not in filters:
                 raise ValueError(f"{size_key}에 x 필터가 없습니다.")
             
-            cross_matrix = Matrix(filters["cross"])
-            x_matrix = Matrix(filters["x"])
-            
-            filters_by_size[matrix_size] = {
-                "cross": cross_matrix,
-                "x": x_matrix
-            }
+            filters_by_size[matrix_size] = normalized_filters
         
         return filters_by_size
 
@@ -67,7 +67,7 @@ class JsonDataLoader:
                 raise ValueError(f"{pattern_key}에 expected 키가 없습니다.")
             
             pattern_matrix = Matrix(pattern_info["input"])
-            expected = pattern_info["expected"]
+            expected = self.normalize_label(pattern_info["expected"])
             
             pattern_cases.append({
                 "pattern_key": pattern_key,
@@ -99,3 +99,11 @@ class JsonDataLoader:
             return int(parts[1])
         except ValueError as exception:
             raise ValueError(f"filter 크기를 숫자로 변환할 수 없습니다: {pattern_key}") from exception
+
+    def normalize_label(self, raw_label):
+        if raw_label in ["+", "cross", "Cross"]:
+            return "Cross"
+        if raw_label in ["x", "X"]:
+            return "X"
+        
+        raise ValueError(f"지원하지 않는 expected 라벨입니다: {raw_label}")
