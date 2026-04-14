@@ -7,6 +7,9 @@ class Matrix:
     
     def size(self):
         return len(self._values)
+    
+    def operation_count(self):
+        return self.size() * self.size()
 
     def sum(self):
         total = 0.0
