@@ -35,11 +35,11 @@ class JsonDataLoader:
                 normalized_label = self.normalize_label(raw_label)
                 normalized_filters[normalized_label] = Matrix(values)
 
-            if "cross" not in filters:
-                raise ValueError(f"{size_key}에 cross 필터가 없습니다.")
+            if "Cross" not in normalized_filters:
+                raise ValueError(f"{size_key}에 Cross 필터가 없습니다.")
 
-            if "x" not in filters:
-                raise ValueError(f"{size_key}에 x 필터가 없습니다.")
+            if "X" not in normalized_filters:
+                raise ValueError(f"{size_key}에 X 필터가 없습니다.")
             
             filters_by_size[matrix_size] = normalized_filters
         

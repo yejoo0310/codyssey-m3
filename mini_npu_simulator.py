@@ -262,11 +262,6 @@ class MiniNpuSimulator:
         else:
             print(f"판정: {result['decision']} | expected: {result['expected']} | FAIL ({result['reason']})")
 
-    def find_first_pattern_by_size(self, pattern_cases, target_size):
-        for pattern_case in pattern_cases:
-            if pattern_case["size"] == target_size:
-                return pattern_case["pattern"]
-        return None
 
     def print_performance_analysis(self, filters_by_size, pattern_cases):
         print("크기       평균 시간(ms)    연산 횟수")
@@ -295,15 +290,34 @@ class MiniNpuSimulator:
             if matrix_size not in filters_by_size:
                 continue
 
-            pattern = self.find_first_pattern_by_size(pattern_cases, matrix_size)
+            cross_filter = filters_by_size[matrix_size]["Cross"]
+            x_filter = filters_by_size[matrix_size]["X"]
+            
+            if cross_filter is None or x_filter is None:
+                continue
+            
+            pattern = self.find_first_valid_pattern_by_size(pattern_cases, matrix_size, cross_filter, x_filter)
             if pattern is None:
                 continue
 
-            cross_filter = filters_by_size[matrix_size]["Cross"]
-            x_filter = filters_by_size[matrix_size]["X"]
-
             avg_time = self.measure_average_time(cross_filter, x_filter, pattern)
             print(f"{matrix_size}x{matrix_size:<7} {avg_time:>10.4f} {pattern.operation_count():>12}")
+
+    def find_first_valid_pattern_by_size(self, pattern_cases, matrix_size, cross_filter, x_filter):
+        for pattern_case in pattern_cases:
+            if pattern_case["size"] != matrix_size:
+                continue
+
+            pattern = pattern_case["pattern"]
+
+            try:
+                cross_filter.validate_same_shape(pattern)
+                x_filter.validate_same_shape(pattern)
+                return pattern
+            except ValueError:
+                continue
+
+        return None
 
     def print_summary(self):
         total_count = len(self.result_record)
